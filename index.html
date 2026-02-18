@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Birthday Surprise</title>
+
+<style>
+body{
+    margin:0;
+    font-family:'Segoe UI',sans-serif;
+    background:radial-gradient(circle at top,#1a1a2e,#000);
+    color:white;
+    overflow:hidden;
+    text-align:center;
+}
+
+/* Glass box */
+.box{
+    background:rgba(255,255,255,0.12);
+    backdrop-filter:blur(12px);
+    border-radius:20px;
+    padding:30px;
+    width:90%;
+    max-width:420px;
+    margin:100px auto;
+    box-shadow:0 0 40px rgba(255,215,0,0.3);
+}
+
+/* Inputs */
+input{
+    width:90%;
+    padding:12px;
+    margin:12px 0;
+    font-size:18px;
+    border:none;
+    border-radius:12px;
+    outline:none;
+}
+
+/* Buttons */
+button{
+    padding:14px 30px;
+    font-size:20px;
+    border:none;
+    border-radius:40px;
+    cursor:pointer;
+    margin:10px;
+    transition:0.3s;
+}
+
+#yesBtn{
+    background:#00ffcc;
+    color:black;
+}
+
+#noBtn{
+    display:none;
+    background:linear-gradient(45deg,gold,#ffcc00);
+    color:black;
+    font-size:48px;
+    padding:20px 60px;
+}
+
+button:hover{
+    transform:scale(1.1);
+}
+
+#secondPage{display:none;}
+
+#finalMessage{
+    display:none;
+    color:gold;
+    font-size:22px;
+    margin-top:25px;
+}
+
+/* Popup */
+.popup{
+    position:fixed;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    background:black;
+    color:gold;
+    padding:25px 40px;
+    border-radius:20px;
+    box-shadow:0 0 30px gold;
+    font-size:22px;
+    z-index:100;
+}
+
+/* Canvas */
+canvas{
+    position:fixed;
+    top:0;
+    left:0;
+    pointer-events:none;
+    z-index:5;
+}
+
+/* Confetti */
+.confetti{
+    position:fixed;
+    width:10px;
+    height:14px;
+    animation:fall linear forwards;
+}
+
+@keyframes fall{
+    0%{transform:translateY(-20px) rotate(0deg);}
+    100%{transform:translateY(120vh) rotate(1080deg);}
+}
+</style>
+</head>
+
+<body>
+
+<!-- FIRST PAGE -->
+<div class="box" id="firstPage">
+    <h2>PLEASE ENTER YOUR NAME AND TODAY'S DATE</h2>
+    <input id="nameInput" placeholder="Enter Name">
+    <input id="dateInput" placeholder="YYYY/MM/DD">
+    <button onclick="check()">Submit</button>
+</div>
+
+<!-- SECOND PAGE -->
+<div class="box" id="secondPage">
+    <h1 style="font-size:60px;">HAPPY BIRTHDAY🎂</h1>
+    <p>Do you want gift?</p>
+    <button id="yesBtn" onclick="yesClick()">YES</button>
+    <button id="noBtn" onclick="noClick()">NO</button>
+
+    <div id="finalMessage">
+        HAPPY BIRTHDAY BRO 🎉<br><br>
+        I knew you didn't want gift.<br>
+        I hope this felt special 💛<br>
+        Many many returns of your birthday!<br>
+        Enjoy your special day!<br><br>
+        ONCE AGAIN HAPPY BIRTHDAY 🎂🥳
+    </div>
+</div>
+
+<canvas id="fireworks"></canvas>
+
+<audio id="music" src="piano.mp3.mp3"></audio>
+
+<script>
+let yesCount=0;
+
+/* CHECK DETAILS */
+function check(){
+    let n=nameInput.value.toLowerCase();
+    let d=dateInput.value;
+    if(n==="sazzan" && d==="2082/11/07"){
+        firstPage.style.display="none";
+        secondPage.style.display="block";
+    }else alert("Wrong details!");
+}
+
+/* POPUP */
+function popup(text){
+    let p=document.createElement("div");
+    p.className="popup";
+    p.innerText=text;
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(),1500);
+}
+
+/* YES LOGIC */
+function yesClick(){
+    yesCount++;
+    if(yesCount===1) popup("Are you sure?");
+    if(yesCount===2) popup("Think again");
+    if(yesCount===3){
+        yesBtn.style.display="none";
+        noBtn.style.display="inline-block";
+    }
+}
+
+/* NO CLICK */
+function noClick(){
+    music.play();
+    finalMessage.style.display="block";
+    confetti();
+    fireworks();
+}
+
+/* CONFETTI */
+function confetti(){
+    for(let i=0;i<250;i++){
+        let c=document.createElement("div");
+        c.className="confetti";
+        c.style.left=Math.random()*100+"vw";
+        c.style.background=`hsl(${Math.random()*360},100%,50%)`;
+        c.style.animationDuration=(3+Math.random()*4)+"s";
+        document.body.appendChild(c);
+    }
+}
+
+/* FIREWORKS */
+const canvas=document.getElementById("fireworks");
+const ctx=canvas.getContext("2d");
+canvas.width=innerWidth;
+canvas.height=innerHeight;
+window.onresize=()=>{canvas.width=innerWidth;canvas.height=innerHeight;}
+
+let particles=[];
+
+function fireworks(){
+    setInterval(()=>{
+        let x=Math.random()*canvas.width;
+        let y=Math.random()*canvas.height/2;
+        for(let i=0;i<120;i++){
+            particles.push({
+                x,y,
+                vx:(Math.random()-0.5)*8,
+                vy:(Math.random()-0.5)*8,
+                life:80,
+                c:`hsl(${Math.random()*360},100%,50%)`
+            });
+        }
+    },700);
+    animate();
+}
+
+function animate(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach((p,i)=>{
+        p.x+=p.vx;
+        p.y+=p.vy;
+        p.vy+=0.05;
+        p.life--;
+        ctx.fillStyle=p.c;
+        ctx.fillRect(p.x,p.y,3,3);
+        if(p.life<=0) particles.splice(i,1);
+    });
+    requestAnimationFrame(animate);
+}
+</script>
+
+</body>
+</html>
